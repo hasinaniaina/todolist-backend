@@ -1,4 +1,5 @@
 import Schemas from "../models/schemas.js";
+import bcrypt from "bcryptjs";
 
 
 const Controller = class {
@@ -15,6 +16,63 @@ const Controller = class {
 
         this.app.get('/', (req, res) => {
             res.send('EveryThing is Ok :)');
+        });
+
+
+
+        this.app.post('/signin', (req, res) => {
+            const passwordHashed = bcrypt.hashSync(req.body.user.password, 10);
+
+            const userParam = {
+                username: req.body.user.username.toLowerCase(),
+                email: req.body.user.email,
+                password: passwordHashed,
+                photo: "./src/assets/images/avatar.png"
+            }
+
+            const userDataAlreadySaved = this.getUserInfo(req);
+
+            userDataAlreadySaved.then((result) => {
+                if (result.length > 0) {
+                    for (let data of result) {
+                        if (data.email == userParam.email) {
+                            res.json('Email registered');
+                            email_already_registered = true;
+                        }
+                    }
+                }
+
+                if (!email_already_registered) {
+                    const newUser = new Schemas.User(userParam);
+                    const saveUser = newUser.save();
+
+                    if (saveUser) {
+                        res.json("Success");
+                    } else {
+                        res.json("Failed");
+                    }
+                }
+            })
+        });
+
+
+        this.app.post('/login', (req, res) => {
+            const userDataAlreadySaved = this.getUserInfo(req, false);
+
+            userDataAlreadySaved.then((result) => {
+                if (result) {
+                    req.session.user = result;
+                    res.json({ user: result, rememberMe: req.session.rememberUser });
+                } else {
+                    res.json({ user: [] });
+                }
+            }).catch((error) => console.log(error));
+        });
+
+        this.app.get('/logout', (req, res) => {
+            req.session.destroy((error) => {
+                res.json({ result: "success" })
+            }); 
         });
 
 
@@ -39,16 +97,14 @@ const Controller = class {
         this.app.post('/seachUser', (req, res) => {
             const username = req.body.username;
 
-            if (username != "") {
-                const search = this.searchUser(username);
-                search.then(result => {
-                    if (result.length > 0) {
-                        res.json({ valid: true, searcResult: result });
-                    } else {
-                        res.json({ valid: false })
-                    }
-                }).catch(error => console.log("Search user error: " + error));
-            }
+            const search = this.searchUser(username);
+            search.then(result => {
+                if (result.length > 0) {
+                    res.json({ valid: true, searcResult: result });
+                } else {
+                    res.json({ valid: false })
+                }
+            }).catch(error => console.log("Search user error: " + error));
         });
 
         this.app.post('/getParticipant', (req, res) => {
@@ -83,7 +139,7 @@ const Controller = class {
                     return res.json({ result: true, value: response });
                 }
             }).catch((error) => {
-                console.log(error)
+                console.log("Update user error" + error);
                 return res.json({ result: false, value: error })
             })
         }); 
@@ -183,7 +239,7 @@ const Controller = class {
         this.app.post('/updateTask', (req, res) => {
             const task = req.body.task;
             const task_id = task._id;
-            console.log(task_id)
+
             const data = {
                 name: task.name,
                 priority: task.priority,
@@ -196,7 +252,6 @@ const Controller = class {
 
             updated.then(result => {
                 if (result) {
-                    console.log(result);
                     return res.json({valid: true, result: result});
                 }
             }).catch(error => console.log("Task update error: " + error));
@@ -211,59 +266,6 @@ const Controller = class {
                     return res.json({valid: true})
                 }
             }).catch(error => console.log("Delete task error: " + error));
-        })
-
-        this.app.post('/signin', (req, res) => {
-            const userParam = {
-                username: req.body.user.username.toLowerCase(),
-                email: req.body.user.email,
-                password: req.body.user.password,
-                photo: "./src/assets/images/avatar.png"
-            }
-
-            const userDataAlreadySaved = this.getUserInfo(req);
-
-            userDataAlreadySaved.then((result) => {
-                if (result.length > 0) {
-                    for (let data of result) {
-                        if (data.email == userParam.email) {
-                            res.json('Email registered');
-                            email_already_registered = true;
-                        }
-                    }
-                }
-
-                if (!email_already_registered) {
-                    const newUser = new Schemas.User(userParam);
-                    const saveUser = newUser.save();
-
-                    if (saveUser) {
-                        res.json("Success");
-                    } else {
-                        res.json("Failed");
-                    }
-                }
-            })
-        });
-
-
-        this.app.post('/login', (req, res) => {
-            const userDataAlreadySaved = this.getUserInfo(req, false);
-
-            userDataAlreadySaved.then((result) => {
-                if (result) {
-                    req.session.user = result;
-                    res.json({ user: result, rememberMe: req.session.rememberUser });
-                } else {
-                    res.json({ user: [] });
-                }
-            }).catch((error) => console.log(error));
-        });
-
-        this.app.get('/logout', (req, res) => {
-            req.session.destroy((error) => {
-                res.json({ result: "success" })
-            }); 
         });
     }
 
@@ -278,9 +280,11 @@ const Controller = class {
     }
 
     async updateUser(userData) {
+        const passwordHashed = (userData.password) ? bcrypt.hashSync(userData.password, 10) : userData.password;
+
         let update = await this.userSchema.findOneAndUpdate({ _id: userData._id }, {
             username: userData.username.toLowerCase(),
-            password: userData.passowrd,
+            password: passwordHashed,
             photo: userData.photo
         });
 
@@ -302,7 +306,11 @@ const Controller = class {
         if (notSpecific) {
             userData = await this.userSchema.find({}).exec();
         } else {
-            userData = await this.userSchema.findOne({ email: email, password: password })
+            const user = await this.userSchema.findOne({ email: email})
+            const passwordMatch = bcrypt.compareSync(password, user.password);
+            if (passwordMatch) {
+                userData = user;
+            }
         }
 
         if (userData) {
