@@ -208,7 +208,11 @@ const Controller = class {
         this.app.get('/getTasks', (req, res) => {
             const tasks = this.getTasks();
             tasks.then(results => {
-                return res.json({valid: true, result: results});
+                if (results.length > 0) {
+                    return res.json({valid: true, result: results});
+                } else {
+                    return res.json({valid: false});
+                }
             }).catch(error => console.log("Get All tasks error: " + error));
         });
 
