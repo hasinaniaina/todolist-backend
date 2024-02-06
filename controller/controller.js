@@ -43,14 +43,17 @@ const Controller = class {
                 }
 
                 if (!email_already_registered) {
-                    const newUser = new Schemas.User(userParam);
-                    const saveUser = newUser.save();
+                    const saveUser = this.insertUser(userParam);
 
-                    if (saveUser) {
-                        res.json("Success");
-                    } else {
-                        res.json("Failed");
-                    }
+                    saveUser.then(result => {
+                        if (result) {
+                            req.session.user = result;
+                            res.json({valid:true, user: result, rememberMe: false });
+                        } else {
+                            res.json({valid: false});
+                        }
+
+                    }).catch(error => console.log("Signin error: " + error))
                 }
             })
         });
@@ -326,6 +329,11 @@ const Controller = class {
         }
 
         return []
+    }
+
+    async insertUser(userParam) {
+        const newUser = await this.userSchema.create(userParam);
+        return newUser;
     }
 
     async getUserInfoById(id) {
