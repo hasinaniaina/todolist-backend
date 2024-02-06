@@ -17,11 +17,14 @@ const Settings = class {
         app.use(cookieParser());
         app.use(session({
             key: "userInfo",
-            secret: 'secret',
+            secret: '',
             resave: false,
-            saveUninitialized: false,
+            saveUninitialized: true,
             cookie: {
                 expires: 60 * 60* 24,
+                secure: true, // This will only work if you have https enabled!
+                httpOnly: true,
+                sameSite: 'none'
             }
         }));
 
