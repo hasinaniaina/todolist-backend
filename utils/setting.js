@@ -17,7 +17,7 @@ const Settings = class {
         app.use(cookieParser());
         app.use(session({
             key: "userInfo",
-            secret: '',
+            secret: 'secret',
             resave: false,
             saveUninitialized: true,
             cookie: {
