@@ -66,7 +66,10 @@ const Controller = class {
                 } else {
                     res.json({ user: [] });
                 }
-            }).catch((error) => console.log(error));
+            }).catch((error) => {
+                console.log("Login error: " + error);
+                return res.json({ user: [] });
+            });
         });
 
         this.app.get('/logout', (req, res) => {
@@ -211,7 +214,7 @@ const Controller = class {
                 if (results.length > 0) {
                     return res.json({valid: true, result: results});
                 } else {
-                    return res.json({valid: false});
+                    return res.json({valid: false}); 
                 }
             }).catch(error => console.log("Get All tasks error: " + error));
         });
