@@ -22,9 +22,7 @@ const Settings = class {
             saveUninitialized: true,
             cookie: {
                 expires: 60 * 60* 24,
-                secure: true, // This will only work if you have https enabled!
-                httpOnly: true,
-                sameSite: 'none'
+                secure: true
             }
         }));
 
