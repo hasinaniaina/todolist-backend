@@ -86,7 +86,7 @@ const Controller = class {
         this.app.post('/getCurrentUser', (req, res) => {
             const rememberedUserId = req.body.rememberedUserId;
             
-            console.log("getCurrentUser" + req.session);
+            console.log("getCurrentUser" + req.session.user);
             if (req.session.user) {  
                 return res.json({ valid: true, user: req.session.user });
             } else if (rememberedUserId) {
