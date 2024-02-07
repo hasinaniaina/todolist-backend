@@ -38,7 +38,7 @@ const Settings = class {
                 resave: false,
                 saveUninitialized: true,
                 cookie: {
-                    expires: 60 * 60* 24
+                    expires: 1000 * 60 * 60* 24,
                 }
             }));
         }

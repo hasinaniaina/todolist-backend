@@ -8,7 +8,7 @@ const Controller = class {
         this.userSchema = Schemas.User;
         this.projectSchema = Schemas.Project;
         this.userProjectSchema = Schemas.UserProject;
-        this.task = Schemas.Task;
+        this.taskSchema = Schemas.Task;
     }
 
     router() {
@@ -199,6 +199,8 @@ const Controller = class {
         this.app.post('/deleteProject', (req, res) => {
             const projectId = req.body.project_id;
             const deleteProject = this.deleteProject(projectId);
+            const deleteUserProject = this.deleteUserProject(projectId);
+            const deleteTask = this.deleteProjectTask(projectId);
             deleteProject.then(deleted => {
                 if (deleted) {
                     const deleteUserProject = this.deleteUserProject(projectId);
@@ -354,6 +356,12 @@ const Controller = class {
         return deleteProject;
     }
 
+    async deleteProjectTask(project_id) {
+        const deleteProjectTask = this.taskSchema.deleteMany({project: project_id});
+        return deleteProjectTask;
+
+    }
+
     async insertUserProject(participant, project_id) {
         const userProjectTmp = [];
 
@@ -392,27 +400,27 @@ const Controller = class {
     }
 
     async getTask(project_id) {
-        const task = await this.task.find({project: project_id}).populate("member");
+        const task = await this.taskSchema.find({project: project_id}).populate("member");
         return task;
     }
 
     async getTasks() {
-        const tasks = await this.task.find({});
+        const tasks = await this.taskSchema.find({});
         return tasks
     }
 
     async insertTask(task) {
-        const insert = await this.task.create(task);
+        const insert = await this.taskSchema.create(task);
         return insert;
     }
 
     async updateTask(id, data) {
-        const update = await this.task.findOneAndUpdate({_id: id}, data);
+        const update = await this.taskSchema.findOneAndUpdate({_id: id}, data);
         return update;
     }
 
     async deleteTask(id) {
-        const deleted = await this.task.findOneAndDelete({_id: id});
+        const deleted = await this.taskSchema.findOneAndDelete({_id: id});
         return deleted;
     }
 }
