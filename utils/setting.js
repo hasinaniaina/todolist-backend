@@ -16,11 +16,12 @@ const Settings = class {
 
 
         app.use(cookieParser());
+        app.set('trust proxy', 1);
 
-        if (process.env.SITEMODE == "Prod") {
+        if (process.env.SITEMODE.includes("production")) {
             app.use(session({
                 key: "userInfo",
-                secret: 'secret',
+                secret: 'prod-secret',
                 resave: false,
                 saveUninitialized: true,
                 cookie: {
