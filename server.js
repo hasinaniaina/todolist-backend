@@ -2,14 +2,16 @@ import express from "express";
 import Controller from "./controller/controller.js";
 import Settings from "./utils/setting.js";
 import cors from 'cors';
+import 'dotenv/config.js';
 
 const app = express();
 app.use(express.json());
 app.use(cors({
     credentials: true, 
-    origin: 'https://todolist-73iy.onrender.com',
+    origin: process.env.CORSORIGIN,
     methods: ['GET', 'POST']
 }));
+
 
 
 

@@ -48,6 +48,7 @@ const Controller = class {
                     saveUser.then(result => {
                         if (result) {
                             req.session.user = result;
+                            console.log(req.session.user);
                             res.json({valid:true, user: result, rememberMe: false });
                         } else {
                             res.json({valid: false});

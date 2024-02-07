@@ -3,6 +3,7 @@ import session from "express-session";
 import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
 import bodyParser from "body-parser";
+import 'dotenv/config'
 
 const Settings = class {
     constructor(app) {
@@ -15,16 +16,29 @@ const Settings = class {
 
 
         app.use(cookieParser());
-        app.use(session({
-            key: "userInfo",
-            secret: 'secret',
-            resave: false,
-            saveUninitialized: true,
-            cookie: {
-                expires: 60 * 60* 24,
-                secure: true
-            }
-        }));
+
+        if (process.env.SITEMODE == "Prod") {
+            app.use(session({
+                key: "userInfo",
+                secret: 'secret',
+                resave: false,
+                saveUninitialized: true,
+                cookie: {
+                    expires: 60 * 60* 24,
+                    secure: true
+                }
+            }));
+        } else {
+            app.use(session({
+                key: "userInfo",
+                secret: 'secret',
+                resave: false,
+                saveUninitialized: true,
+                cookie: {
+                    expires: 60 * 60* 24
+                }
+            }));
+        }
 
         app.use(bodyParser.urlencoded({extended:true}));
 
