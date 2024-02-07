@@ -48,7 +48,7 @@ const Controller = class {
                     saveUser.then(result => {
                         if (result) {
                             req.session.user = result;
-                            console.log("Signin" + res.session.user);
+                            console.log("Signin" + req.session.user);
                             res.json({valid:true, user: result, rememberMe: false });
                         } else {
                             res.json({valid: false});
@@ -87,7 +87,7 @@ const Controller = class {
             const rememberedUserId = req.body.rememberedUserId;
             
             if (req.session.user) {  
-                console.log("getCurrentUser" + res.session.user);
+                console.log("getCurrentUser" + req.session.user);
                 return res.json({ valid: true, user: req.session.user });
             } else if (rememberedUserId) {
                 const user = this.getUserInfoById(rememberedUserId);
