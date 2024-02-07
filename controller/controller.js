@@ -87,6 +87,7 @@ const Controller = class {
             const rememberedUserId = req.body.rememberedUserId;
             
             console.log("getCurrentUser" + req.session.user);
+            
             if (req.session.user) {  
                 return res.json({ valid: true, user: req.session.user });
             } else if (rememberedUserId) {

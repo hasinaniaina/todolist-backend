@@ -24,8 +24,11 @@ const Settings = class {
                 resave: false,
                 saveUninitialized: true,
                 cookie: {
-                    expires: 60 * 60* 24,
-                    secure: true
+                    maxAge: 1000 * 60 * 60* 24,
+                    secure: true,
+                    httpOnly:true,
+                    sameSite: "none"
+
                 }
             }));
         } else {
