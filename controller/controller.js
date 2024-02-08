@@ -18,8 +18,6 @@ const Controller = class {
             res.send('EveryThing is Ok :)');
         });
 
-
-
         this.app.post('/signin', (req, res) => {
             const passwordHashed = bcrypt.hashSync(req.body.user.password, 10);
 
@@ -27,7 +25,7 @@ const Controller = class {
                 username: req.body.user.username.toLowerCase(),
                 email: req.body.user.email,
                 password: passwordHashed,
-                photo: "./src/assets/images/avatar.png"
+                photo: "../src/assets/images/avatar.png"
             }
 
             const userDataAlreadySaved = this.getUserInfo(req);
@@ -84,19 +82,21 @@ const Controller = class {
 
         this.app.post('/getCurrentUser', (req, res) => {
             const rememberedUserId = req.body.rememberedUserId;
-
-            if (req.session.user) {  
-                return res.json({ valid: true, user: req.session.user });
+            let user = "";
+            if (req.session.user) {
+                user = this.getUserInfoById(req.session.user._id);
             } else if (rememberedUserId) {
-                const user = this.getUserInfoById(rememberedUserId);
+                user = this.getUserInfoById(rememberedUserId);
+            } 
 
+            if (user != "") {
                 user.then((result) => {
                     if (result) {
                         return res.json({ valid: true, user: result });
                     }
                 }).catch((error) => console.log("Remembered me error" + error));
             } else {
-                return res.json({ valid: false });
+                return res.json({valid: false});
             }
         });
 
@@ -292,7 +292,7 @@ const Controller = class {
     }
 
     async updateUser(userData) {
-        const passwordHashed = (userData.password) ? bcrypt.hashSync(userData.password, 10) : userData.password;
+        const passwordHashed = (userData.password.length < 40) ? bcrypt.hashSync(userData.password, 10) : userData.password;
 
         let update = await this.userSchema.findOneAndUpdate({ _id: userData._id }, {
             username: userData.username.toLowerCase(),
@@ -320,6 +320,7 @@ const Controller = class {
         } else {
             const user = await this.userSchema.findOne({ email: email})
             const passwordMatch = bcrypt.compareSync(password, user.password);
+            console.log(passwordMatch);
             if (passwordMatch) {
                 userData = user;
             }
@@ -367,7 +368,7 @@ const Controller = class {
 
         for (let user_id of participant) {
             userProjectTmp.push({ user: user_id, project: project_id });
-        }
+        } 
 
         return this.userProjectSchema.insertMany(userProjectTmp);
     }
